@@ -8,7 +8,7 @@
                 {{ filter.name }}
             </h3>
 
-            <div ref="content" class="flex px-2 pb-2" :class="{ 'flex-wrap': filter.mode === 'wrap' }">
+            <div ref="content" class="p-2" :class="{ 'flex-wrap': filter.mode === 'wrap' }">
 
                 <Pill v-if="filter.showSelectNoneButton" :active="currentActive.length === 0"
                       @click.native="clearFilters()">
@@ -17,14 +17,23 @@
 
                 </Pill>
 
-                <Pill v-for="option in filter.options"
+                <Pill v-for="(option, index) in filter.options"
                       :key="option.value"
                       :active="currentActive.includes(option.value)"
-                      @click.native="enableFilter(option.value)">
+                      @click.native="enableFilter(option.value)"
+                      :class="index > max && !expanded ? 'hidden' : ''">
 
                     {{ option.name }}
 
                 </Pill>
+
+                <!-- Collapse/expand options -->
+                <div class="w-full text-center">
+                    <a href="" @click.prevent="toggle" v-if="filter.options.length > max" class="expand-collapse">
+                        <span v-if="expanded">меньше</span>
+                        <span v-else>больше</span>
+                    </a>
+                </div>
 
             </div>
 
@@ -42,6 +51,14 @@
     export default {
         name: 'PillFilter',
         components: { Pill },
+
+        data: function () {
+            return {
+                expanded: false,
+                max: 3,
+            }
+        },
+
         props: {
             resourceName: {
                 type: String,
@@ -72,6 +89,11 @@
 
         },
         methods: {
+
+            toggle: function () {
+                this.expanded = !this.expanded;
+            },
+
             setFilter(value) {
 
                 this.$store.commit(`${ this.resourceName }/updateFilterState`, {
